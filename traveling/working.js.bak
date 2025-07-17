@@ -1,0 +1,124 @@
+/**
+ * Auto-generated code below aims at helping you parse
+ * the standard input according to the problem statement.
+ **/
+
+var charToMoves = new Map([
+    [`A`, 1],[`B`, 2],[`C`, 3],[`D`, 4],[`E`, 5],[`F`, 6],[`G`, 7],
+    [`H`, 8],[`I`, 9],[`J`, 10],[`K`, 11],[`L`, 12],[`M`, 13],
+    [`N`, -13],[`O`, -12],[`P`, -11],[`Q`, -10],[`R`, -9],[`S`, -8],
+    [`T`, -7],[`U`, -6],[`V`, -5],[`W`, -4],[`X`, -3],[`Y`, -2],[`Z`, -1],
+]);å
+
+// var letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+// ascii codes 65-90, 32 -- need to treat space (32) as 91 for calculations.
+
+var stones = [];
+
+function getStoneIndexAndMinCommandCount(character, currentLocation) {
+    var minimumCommandCount = 99;
+    var stoneIndexOfMin = -1;
+    for (i=0; i<stones.length; i++) {
+        var m[48;47;165;1692;2970toveCommandCount = Math.abs(currentLocation - i);
+        var asciiCodeAtStone = stones[i].charCodeAt(0) == 32 ? 91 : stones[i].charCodeAt(0);
+        var asciiNeeded = character.charCodeAt(0) == 32 ? 91 : character.charCodeAt(0);
+        var movesToChangeStone = Math.min(Math.abs(asciiCodeAtStone-asciiNeeded), Math.abs(27+asciiCodeAtStone-asciiNeeded));
+        var totalMovesForThisStone = movesToChangeStone + moveCommandCount;
+        if (minimumCommandCount < totalMovesForThisStone) {
+            continue;
+        }  
+        minimumCommandCount = totalMovesForThisStone;
+        stoneIndexOfMin = i;
+    }
+    return [stoneIndexOfMin, minimumCommandCount];
+}
+
+
+
+
+function getMoveStringForChar(character) {
+    var result = "";
+    var index = charToMoves.get(character);
+    if (index > 0) {
+        for (j=0;j<index;j++) {
+            result += "+";
+        }
+        return result;
+    } else if (index < 0) {
+        for (j=0;j<-index;j++) {
+            result += "-";
+        }
+    }
+    return result;
+}
+
+var finalResult = "";
+var charMap = new Map();
+
+const magicPhrase = readline();
+var currentChar = magicPhrase[0];
+stones.push(currentChar);
+
+charMap.set(currentChar,0);
+
+var currentStone = 0;
+var usedStones = 0;
+var currentMove = charToMoves.get(currentChar);
+if (currentMove) {
+    finalResult += getMoveStringForChar(currentChar) + ".";
+} else {
+    finalResult += ".";
+}
+
+if (magicPhrase[0] != magicPhrase [1]) {
+    finalResult += ">";
+    currentStone++;
+    usedStones = charMap.size;
+}
+
+for (i=1; i<magicPhrase.length; i++) {
+    currentChar= magicPhrase[i];
+    //console.error(getStoneIndexAndMinCommandCount(currentChar, currentStone));
+    var stoneIndexOfChar = charMap.get(currentChar);
+    if (stoneIndexOfChar >=0) {
+        if (Math.abs(stoneIndexOfChar - currentStone) > 15) {
+            for (j=0; j<30-Math.abs(stoneIndexOfChar - currentStone); j++) {
+                finalResult += (stoneIndexOfChar - currentStone > 0) ? "<" : ">";
+            }
+        } else {
+            for (j=0;j<Math.abs(stoneIndexOfChar - currentStone); j++) {
+                finalResult += (stoneIndexOfChar - currentStone < 0) ? "<" : ">";
+            }
+        }
+        finalResult += ".";
+        currentStone = stoneIndexOfChar;
+    } else {
+        var nextStone = charMap.size;
+        for (idx=0;idx<nextStone - currentStone; idx++) {
+            finalResult += ">";
+        }
+        finalResult += getMoveStringForChar(currentChar) + ".";
+        charMap.set(currentChar, nextStone);
+        stones[nextStone] = currentChar;
+        currentStone = nextStone;
+    }
+    
+}
+
+
+// A B C D E F G H I J K L M 
+// 
+// Z Y X W V U T S R Q P O N
+//console.error(charMap);
+//console.error(magicPhrase);
+//console.error(stones);
+// Write an action using console.log()
+// To debug: console.error('Debug messages...');
+
+console.log(finalResult);
+
+
+// instead of just moving left or right to the already used stone
+// figure out if it is shorter to change the current stone or a neighborhing stone
+
+

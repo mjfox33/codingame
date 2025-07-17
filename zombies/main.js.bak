@@ -1,0 +1,89 @@
+var zombies = [];
+var humans = [];
+
+function distance(x1, y1, x2, y2) {
+    return Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+}
+
+function getNearestZombieIndex(x,y) {
+    var minDistance = 32000;
+    var nearestZombieIndex = 0;
+    for (i=0; i<zombies.length; i++) {
+        var distanceToCurrentZombie = distance(x, zombies[i].nextX, y, zombies[i].nextY);
+        if (distanceToCurrentZombie < minDistance) {
+            minDistance = distanceToCurrentZombie;
+            nearestZombieIndex = i;
+        }
+    }
+    return nearestZombieIndex;
+}
+
+function getNearestHumanIndex(x,y) {
+    var minDistance = 32000;
+    var nearestHumanIndex = 0;
+    for (i=0; i<humans.length; i++) {
+        var distanceToCurrentHuman = distance(x, humans[i].x, y, humans[i].y);
+        if (distanceToCurrentHuman < minDistance) {
+            minDistance = distanceToCurrentHuman;
+            nearestHumanIndex = i;
+        }
+    }
+    return nearestHumanIndex;
+}
+
+function indexesOfHumansThatCanBeSaved(x,y) {
+    var savable = [];
+    for (j=0; j<humans.length; j++) {
+        var currentHuman = humans[j];
+        var closestZombieIndex = getNearestZombieIndex(currentHuman.x, currentHuman.y);
+        var distanceToClosestZombie = distance(currentHuman.x, zombies[closestZombieIndex].nextX, 
+            currentHuman.y, zombies[closestZombieIndex].nextY);
+        var distanceToAsh = distance(currentHuman.x, x, currentHuman.y, y);
+        if (Math.ceil((distanceToAsh-2000)/1000)>Math.ceil((distanceToClosestZombie-400)/400)) {
+            savable.push(j);
+        }
+    }
+    console.error(savable);
+    return savable;
+}
+
+while (true) {
+    var inputs = readline().split(' ');
+    const currentX = parseInt(inputs[0]);
+    const currentY = parseInt(inputs[1]);
+    
+    humans = [];
+    const currentHumanCount = parseInt(readline());
+    console.error(currentHumanCount);
+    for (let i = 0; i < currentHumanCount; i++) {
+        var inputs = readline().split(' ');
+        const humanId = parseInt(inputs[0]);
+        const humanX = parseInt(inputs[1]);
+        const humanY = parseInt(inputs[2]);
+        humans.push({id:humanId, x:humanX, y:humanY});
+    }
+    
+    zombies = [];
+    const currentZombieCount = parseInt(readline());
+    for (let i = 0; i < currentZombieCount; i++) {
+        var inputs = readline().split(' ');
+        const zombieId = parseInt(inputs[0]);
+        const zombieX = parseInt(inputs[1]);
+        const zombieY = parseInt(inputs[2]);
+        const zombieXNext = parseInt(inputs[3]);
+        const zombieYNext = parseInt(inputs[4]);
+        zombies.push({id:zombieId, x:zombieX, y:zombieY, nextX:zombieXNext, nextY:zombieYNext});
+    }
+
+    var savableHumans = indexesOfHumansThatCanBeSaved(currentX, currentY);
+    var nearestZombieIndex = getNearestZombieIndex(currentX, currentY);
+    var humanToSaveIndex = savableHumans.length > 0 ? savableHumans[0] : 0; 
+    console.error(humanToSaveIndex);   
+    var humanToSaveX = humans[humanToSaveIndex].x;
+    var humanToSaveY = humans[humanToSaveIndex].y;
+    var targetX = savableHumans.length > 0 ? humanToSaveX : zombies[nearestZombieIndex].x;
+    var targetY = savableHumans.length > 0 ? humanToSaveY : zombies[nearestZombieIndex].y;
+    console.log(`${targetX} ${targetY}`);     // Your destination coordinates
+
+}
+
