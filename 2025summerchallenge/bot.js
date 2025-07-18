@@ -1,6 +1,11 @@
+// Victory Conditions
+// In this league, you will have exactly 1 turn to get both your agents behind 
+// the best of two adjacent tiles behind cover 
+// then shoot the opposing enemy with the least protection from cover.
 const myId = parseInt(readline()); // Your player id (0 or 1)
 const agentCount = parseInt(readline()); // Total number of agents in the game
-const agents = [];
+const myAgents = [];
+const oppAgents = [];
 
 for (let i = 0; i < agentCount; i++) {
   const currAgent = {};  
