@@ -1,8 +1,8 @@
 // Victory Conditions
-// In this league, you will have exactly 1 turn to get both 
-// your agents behind the best of two adjacent tiles behind 
-// cover then shoot the opposing enemy with the least protection 
-// from cover (of the two closest enemies).
+// In this league, there are four groups of barricaded agents, 
+// one of which includes one of your own agents. 
+// You must eliminate all three groups of only enemy agents 
+// with your limited splash bomb supply. Shooting is disabled.
 const myId = parseInt(readline()); // Your player id (0 or 1)
 const agentCount = parseInt(readline()); // Total number of agents in the game
 const myAgents = [];
@@ -55,6 +55,62 @@ for (let i = 0; i < gameMap.height; i++) {
   gameMap.board.push(row);
 }
 
+// get four zones
+let x0 = 0;
+let x3 = gameMap.width - 1;
+let y0 = 0;
+let y3 = gameMap.height - 1;
+
+let x1 = 0;
+let x2 = 0;
+let y1 = 0;
+let y2 = 0;
+
+let wall = 1;
+for (let col = 0; col < gameMap.width; col++) {
+  if (gameMap.board[0][col] == 0) {
+    if (wall == 1) {
+      wall = 0;
+      if (x1 == 0) {
+        x1 = col - 1;
+      }
+    }
+  } else {
+    if (wall == 0) {
+      wall = 1;
+      if (x2 == 0) {
+        x2 = col;
+      }
+    }
+  }
+}
+
+wall = 1;
+for (let row = 0; row < gameMap.height; row++) {
+  if (gameMap.board[row][0] == 0) {
+    if (wall == 1) {
+      wall = 0;
+      if (y1 == 0) {
+        y1 = row - 1;
+      }
+    }
+  } else {
+    if (wall == 0) {
+      wall = 1;
+      if (y2 == 0) {
+        y2 = row;
+      }
+    }
+  }
+}
+
+const groups = [
+  [ x0, x1, y0, y1 ],
+  [ x2, x3, y0, y1 ],
+  [ x0, x1, y2, y3 ],
+  [ x2, x3, y2, y3 ]
+]
+
 // game loop
 while (true) {
   const agentCount = parseInt(readline());
@@ -73,37 +129,34 @@ while (true) {
     agents.push(agent);
   }
 
-  const moves = [];
+  let ignoreGroup = -1;
+  let ignoreAgent = -1;
+  let workingAgent = -1;
+  let bombsLeft = -1;
   for (const agent of agents) {
     if (myAgentIds.has(agent.agentId)) {
-      const xOffset = agent.x == 0 ? 1 : -1;
-      let move = "";
-      if (gameMap.board[agent.y - 1][agent.x + xOffset] > gameMap.board[agent.y + 1][agent.x + xOffset]) {
-        move += `${agent.agentId}; MOVE ${agent.x} ${agent.y - 1};`;
-      } else {
-        move += `${agent.agentId}; MOVE ${agent.x} ${agent.y + 1};`;
+      for (let i = 0; i < groups.length; i++) {
+        if (agent.x > groups[i][0] && agent.x < groups[i][1] && agent.y > groups[i][2] && agent.y < groups[i][3]) {
+          ignoreGroup = i;
+          ignoreAgent = agent.agentId;
+        }
       }
-
-      let targetAgentId = -1;
-      const agentOffset = agent.agentId == 1 ? 2 : 4;
-      const targetOffset = agent.x == 0 ? -1 : 1;
-      const tile1 = gameMap.board[agents[agentOffset].y][agents[agentOffset].x + targetOffset];
-      const tile2 = gameMap.board[agents[agentOffset + 1].y][agents[agentOffset + 1].x + targetOffset];
-      targetAgentId = tile1 < tile2 ? agentOffset + 1 : agentOffset + 2;
-      move += `SHOOT ${targetAgentId}`;
-      moves.push(move);
-    }
+      if (ignoreAgent == -1) {
+        workingAgent = agent.agentId;
+        bombsLeft = agent.splashBombs;
+      }
+    }  
   }
   
-    
+  let targetGroup = 3 - bombsLeft;
+  if (targetGroup >= ignoreGroup) {
+    targetGroup++;
+  }
+  
+  const targetX = Math.floor(Math.round((groups[targetGroup][0] + groups[targetGroup][1]) / 2, 0));
+  const targetY = Math.floor(Math.round((groups[targetGroup][2] + groups[targetGroup][3]) / 2, 0));
   const myAgentCount = parseInt(readline()); // Number of alive agents controlled by you
   for (let i = 0; i < myAgentCount; i++) {
-
-        // Write an action using console.log()
-        // To debug: console.error('Debug messages...');
-
-
-    // One line per agent: <agentId>;<action1;action2;...> actions are "MOVE x y | SHOOT id | THROW x y | HUNKER_DOWN | MESSAGE text"
-    console.log(`${moves[i]}`);
+    console.log(`${workingAgent};MOVE ${targetX} ${targetY}; THROW ${targetX} ${targetY}`)
   }
 }
